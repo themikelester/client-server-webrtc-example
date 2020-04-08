@@ -28,7 +28,7 @@ class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
     void OnRemoveStream(webrtc::MediaStreamInterface* /* stream */) {}
 
     // Override data channel change.
-    void OnDataChannel(webrtc::DataChannelInterface* channel) {
+    void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
       on_data_channel(channel);
     }
 
@@ -89,10 +89,10 @@ class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescription
     void OnFailure(const std::string& /* error */) {}
 
     // Unimplemented virtual function.
-    int AddRef() const { return 0; }
+    void AddRef() const { }
 
     // Unimplemented virtual function.
-    int Release() const { return 0; }
+    rtc::RefCountReleaseStatus Release() const { return rtc::RefCountReleaseStatus::kDroppedLastRef; }
 
   private:
     std::function<void(webrtc::SessionDescriptionInterface*)> on_success;
@@ -111,10 +111,10 @@ class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserv
     void OnFailure(const std::string& /* error */) {}
 
     // Unimplemented virtual function.
-    int AddRef() const { return 0; }
+    void AddRef() const { }
 
     // Unimplemented virtual function.
-    int Release() const { return 0; }
+    rtc::RefCountReleaseStatus Release() const { return rtc::RefCountReleaseStatus::kDroppedLastRef; }
 };
 
 #endif  // WEBRTC_EXAMPLE_SERVER_OBSERVERS_H

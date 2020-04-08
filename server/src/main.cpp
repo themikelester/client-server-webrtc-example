@@ -11,10 +11,10 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-#include <webrtc/api/peerconnectioninterface.h>
-#include <webrtc/base/physicalsocketserver.h>
-#include <webrtc/base/ssladapter.h>
-#include <webrtc/base/thread.h>
+#include <api/peerconnectioninterface.h>
+#include <rtc_base/physicalsocketserver.h>
+#include <rtc_base/ssladapter.h>
+#include <rtc_base/thread.h>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -156,8 +156,9 @@ void OnWebSocketMessage(WebSocketServer* /* s */, websocketpp::connection_hdl hd
     webrtc::SdpParseError error;
     webrtc::SessionDescriptionInterface* session_description(
         webrtc::CreateSessionDescription("offer", sdp, &error));
+    const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
     peer_connection->SetRemoteDescription(&set_session_description_observer, session_description);
-    peer_connection->CreateAnswer(&create_session_description_observer, nullptr);
+    peer_connection->CreateAnswer(&create_session_description_observer, options);
   } else if (type == "candidate") {
     std::string candidate = message_object["payload"]["candidate"].GetString();
     int sdp_mline_index = message_object["payload"]["sdpMLineIndex"].GetInt();
@@ -175,11 +176,12 @@ void OnWebSocketMessage(WebSocketServer* /* s */, websocketpp::connection_hdl hd
 void SignalThreadEntry() {
   // Create the PeerConnectionFactory.
   rtc::InitializeSSL();
-  peer_connection_factory = webrtc::CreatePeerConnectionFactory();
-  rtc::Thread* signaling_thread = rtc::Thread::Current();
-  signaling_thread->set_socketserver(&socket_server);
-  signaling_thread->Run();
-  signaling_thread->set_socketserver(nullptr);
+  peer_connection_factory = webrtc::CreateModularPeerConnectionFactory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+
+  // rtc::Thread* signaling_thread = rtc::Thread::Current();
+  // signaling_thread->set_socketserver(&socket_server);
+  // signaling_thread->Run();
+  // signaling_thread->set_socketserver(nullptr);
 }
 
 // Main entry point of the code.
